@@ -21,9 +21,10 @@ Integrating with Power BI for visualization of processed data.
 Handling real-time data streams from IoT devices or event hubs.  
 Building real-time analytics pipelines.  
 
-Create Azure Account
-Create Resouce group
-Create Work Space
+**Steps**  
+Create Azure Account  
+Create Resouce group  
+Create Work Space  
 
 ![image](https://github.com/user-attachments/assets/2e2440ab-0a85-47e8-a9e4-5a76e1a40fc2)
 
