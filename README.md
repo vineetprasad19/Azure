@@ -2,7 +2,7 @@
 Azure Databricks is an Apache Spark-based analytics platform optimized for the Microsoft Azure cloud. It is a collaborative, cloud-based environment designed for data engineering, machine learning, and analytics workloads. Azure Databricks integrates seamlessly with Azure services like Azure Data Lake Storage, Azure SQL Database, Azure Machine Learning, and Power BI, making it a powerful tool for modern data processing and analytics.  
 
 # What is Azure Databricks Used For? 
-**Data Engineering:**
+**Data Engineering:**  
 Ingesting, cleaning, and transforming large datasets for further analysis.  
 ETL (Extract, Transform, Load) processes at scale.  
 Real-time and batch processing of data.  
