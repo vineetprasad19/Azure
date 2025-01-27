@@ -224,3 +224,32 @@ If you ask me when to use the %fs command and when to use the dbutils package, I
 ![image](https://github.com/user-attachments/assets/242f5026-d6dd-4682-86f9-5025619d7030)
 
 ![image](https://github.com/user-attachments/assets/2781a389-5969-4972-80a3-5106777b3db6)
+
+# Azure Data Lake (ADLS)
+
+![image](https://github.com/user-attachments/assets/830af93d-99af-435f-9c3d-f6e4a84c57de)
+
+Each Azure Storage account comes with an access key that we can use to access the storage account. Also, we can generate a special kind of key called shared access signature or otherwise referred to as SAS token, and we can use that to access the storage account. SAS tokens lets us manage access at a more granular level than the access key. We can also create a service principal and give the required access for the data lake to the service principal, and use those credentials to access the storage account.
+All of these three options can take two forms.  
+The first one is to use these credentials in the notebook and authenticate to the data lake. The authentication in this scenario will be valid just for the duration of the session, i.e. until the notebook has been detached to the cluster. This is called session scoped authentication.  
+The other option is to use these credentials in the cluster and authenticate from the cluster. The authentication will happen when the cluster starts, and it will be valid until the cluster has been terminated. All the notebooks connected to this cluster will have access to the data. This is called cluster scoped authentication.  
+Apart from these, there are two more forms of authentication patterns available in Databricks.  
+First one is called the AAD Pass through authentication or otherwise referred to as the Azure Active Directory pass through authentication. In this pattern, we just need to enable the cluster to use Azure Active Directory. Pass through authentication. Whenever a user runs a notebook, the cluster will use the user's Azure Active Directory credentials and look for the roles the user has been assigned to the Azure Data Lake Storage using IAM or Identity and Access Management. If the user has access to the storage account, it will allow the user to access the storage account. Otherwise, the user won't be able to access the storage. AAD pass through authentication is only available on premium workspaces.  
+The last one is the most recent addition to Databricks, called Unity Catalog. In this access pattern, the administrators can define the access permissions for a user using the Databricks Unity Catalog. When a user is trying to access the storage account, the cluster will check for the user's access in the unity catalog. If the user has the required permissions, it will allow the user to access the storage account, otherwise they won't be able to access.  
+
+**First Lets create a Azure Storage Account.**
+
+![image](https://github.com/user-attachments/assets/e0ba0b80-b93e-48f3-8b73-0779d954a484)
+
+![image](https://github.com/user-attachments/assets/50299e56-0814-4ecc-bf1e-9840232e9e7c)
+
+![image](https://github.com/user-attachments/assets/bc10e86a-9dab-4b19-88f5-b850840cdb3d)
+
+![image](https://github.com/user-attachments/assets/faa56980-f3d7-44d5-9be4-ab9b2ff10d5e)
+
+![image](https://github.com/user-attachments/assets/394d0555-c0c4-4589-94a5-2cf113f06841)
+
+![image](https://github.com/user-attachments/assets/af199b7e-ba89-4e96-b9f9-cbf6bda6dfd1)
+
+
+
