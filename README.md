@@ -443,6 +443,25 @@ Query the catalog data from databricks notebook.
 DBFS is simply a file system that provides distributed access to the data stored in Azure storage. It's not a storage solution in itself. The storage here is the Azure Blob Storage, and this is the default storage that's created when the Databricks workspace was deployed. This DBFS mount on the default Azure Blob Storage is called DBFS Root.  
 ![image](https://github.com/user-attachments/assets/67fa993e-614e-4f6e-aaf4-cbe279325550)
 
+# Data Ingestion
+
+![image](https://github.com/user-attachments/assets/5b52440b-3760-4ff2-8ad7-02b32ff19959)
+
+# Databricks Workflow
+
+Databricks offers jobs that you can schedule to run a specific time are a regular interval, which is great, but it lacks a lot of functionality that you would normally get with any kind of scheduling tools. For example, you can't create dependencies between jobs. To address that Databricks offers and utility called notebook utility, which lets you create notebook workflow. generally these kind of things are not done in Databricks, because of its limited capability within the scheduler itself. You'll have to write Python code like this in order to achieve concurrent execution. So instead of this in a production scenario, you would go to Azure Data Factory, because that gives you a rich set of capabilities. Like you can execute things in parallel, you can have different types of clusters for each one of them and all of that kind of stuff.
+
+![image](https://github.com/user-attachments/assets/b2e57f01-2485-4641-a1d8-562b485b066e)
+
+![image](https://github.com/user-attachments/assets/48838fe7-8f83-42f9-991f-c717f03e3cfa)
+
+![image](https://github.com/user-attachments/assets/2d50cb6b-161f-4908-9384-4bf973c9b3c9)
+
+![image](https://github.com/user-attachments/assets/ab36c7fc-608b-48c6-a1dc-c352c8f373bc)
+
+![image](https://github.com/user-attachments/assets/2f56f890-6bbb-476d-b235-100365c19378)
+
+
 # Azure Microsoft Fabric
 With Microsoft Fabric, you don't have to spend all of your time combining various services from different vendors. Instead, you can use a single product that is easy to understand, set up, create, and manage. Fabric offers persona-optimized experiences and tools in an integrated user interface.
 In addition to a simple, shared user experience, Fabric is a unified software-as-a-service (SaaS) offering, with all your data stored in a single open format in OneLake. OneLake is accessible by all of the analytics engines in the platform. Fabric offers scalability, cost-effectiveness, accessibility from anywhere with an internet connection, and continuous updates and maintenance provided by Microsoft.
