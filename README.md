@@ -331,8 +331,109 @@ spark.conf.set("fs.azure.sas.fixed.token.<storage-account>.dfs.core.windows.net"
 
 ![image](https://github.com/user-attachments/assets/895ef366-75db-44a4-9a42-9bf89bdb8a32)
 
+# Service Principal  
+we are going to look at accessing the Data Lake Storage using **Azure Service Principal**. Service Principals are quite similar to user accounts. They can be registered in the Azure Active Directory and assigned permissions required to access the resources in the Azure subscription via role-based access control or RBAC.  
+Azure makes a number of standard roles available, and you can also create custom roles.  
+**Service Principals** are the recommended method to be used in automated tools such as **Databricks jobs** as well as in CI/CD pipelines. This is because they provide better security and traceability.  
+In a good architecture, each Application will have its own Service Principal, and the **Service Principal is just assigned the required permissions on the resources.** All of this can be audited and monitored. So this provides better security and monitoring. As you can see, using a Service Principal to access the Data Lake is slightly more involved than the other options we've seen so far.   
+**Steps**  
+1. we need to register the Service Principal. Service Principal is also referred to as Azure AD Application or Active Directory Application. Each Application that's registered is given a unique identifier called an Application or a client ID.  
+2. create a secret for the Service Principal.   
+3. configure Databricks to access the storage account via the Service Principal. We can do that by setting some Spark configuration parameters.  
+4. We then need to assign the required role on the Data Lake for the Service Principal so that the Service Principal can access the data in the Data Lake. The Role, Storage Blob Data Contributor, gives full access to the storage account, But you can also use Storage Blob Data Reader if your Application only needs a read-only access.  
+
+![image](https://github.com/user-attachments/assets/67c3ab56-e5cd-4f85-8f64-c719436e60a8)
+
+To Register, go to Azure Active Directory and Click App Registration  
+![image](https://github.com/user-attachments/assets/d1ae39dd-10e3-459f-aecf-feef3fc8d54f)
+
+![image](https://github.com/user-attachments/assets/af5fc480-7645-42a0-9d2f-9eb98380f512)
+
+Now create secret keys. 
+![image](https://github.com/user-attachments/assets/b874c129-0319-4779-a71d-cd6e362dcedd)
+
+spark.conf.set("fs.azure.account.auth.type.formula1dlrack.dfs.core.windows.net", "OAuth")  
+spark.conf.set("fs.azure.account.oauth.provider.type.formula1dlrack.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")  
+spark.conf.set("fs.azure.account.oauth2.client.id.formula1dlrack.dfs.core.windows.net", client_id)  
+spark.conf.set("fs.azure.account.oauth2.client.secret.formula1dlrack.dfs.core.windows.net", client_secret)  
+spark.conf.set("fs.azure.account.oauth2.client.endpoint.formula1dlrack.dfs.core.windows.net", f"https://login.microsoftonline.com/{tenant_id}/oauth2/token")  
+
+Now Add a Role assignment to your storage Account  
+![image](https://github.com/user-attachments/assets/e5a019af-7b34-4ab2-91a8-0093e170002a)
+
+Add App/member to the role. 
+![image](https://github.com/user-attachments/assets/0823b63b-7c2f-40eb-a8f8-5279ebb941f0)
+
+![image](https://github.com/user-attachments/assets/68a6a465-03cb-40f0-813c-88307551df07)
+
+So all we've done here is that we've given the Storage Blob Data Contributor access on our storage account to the Service Principal. So the Service Principal can now access the storage account.  
+
+Now go back to your notebook and runall. 
+
+![image](https://github.com/user-attachments/assets/58785080-56f7-4f62-8a17-1127bc2fc425)
+
+As you can see here, we have successfully managed to access our storage account. So we've got the file being listed here and the data is being read as well. So with that we've successfully managed to use the Service Principal to access our storage account from Databricks.  
+
+Instead of keeping the access keys in notebook and running the spark job, we can configure the access keys in cluster itself so cluster can validate for us when runnning the notebook jobs, but this is not the best practice as some may have different access and we don't want them to access all via cluster authentication.  
+
+The best is the **Active directory credential Passthrough**. We might want to restrict access to users based on what they can see via the Active Directory account. This is what is called AAD or Azure Active Directory credential pass through authentication. Effectively, Databricks will pass the user's Azure Active Directory credentials to the ADLs storage account to authenticate if the specific user has the required role assigned in Rbac for the storage account. They'll be able to access the storage account, otherwise they won't be able to access the storage account. This is really useful in scenarios such as multiple machine learning engineers, or using the same Databricks cluster, but each one should have access to only specific storage accounts. NOw this is called as **Unity Catalog** so look into it.  
+![image](https://github.com/user-attachments/assets/51865838-fd00-4e4d-9e4b-38f5b775bf28)
+
+# Unity Catalog
+Unity Catalog is a databricks offered unified solution for implementing data governance in the Lakehouse.  
+Data Governance is the process of managing the availability, usability, integrity and security of all the data present in an enterprise. An enterprise should be able to control access to the data to only the users who should have the access. Because not having the right access control could compromise the customer data and the reputation of the enterprise. A successful implementation of a data governance solution will ensure that the data is trustworthy and not misused. It requires the ability to trace the data back to its source for authenticity and also the ability to audit the usage of the data to ensure that it is not misused. It must help implement privacy regulations such as GDPR, CCPA, etc. Non-compliance with these regulations could land companies with hefty penalties and bad reputation with the customers. So it's important that companies implement the right data governance solution. These are the general characteristics of a good data governance solution.  
 
 
+Unity Catalog offers data access control by restricting access to only the required users and groups. In Databricks, this means implementing access control to files stored in the Data Lake. The tables created in Databricks as well as notebooks, dashboards and machine learning models. Once the user is given access, we should be able to see how the user is using the data and how often and when it's being accessed. So we need some audit information of the data access to be logged and made available.  
+Unity Catalog makes the necessary audit logs available to do this. We also need to be able to identify the trustworthiness of the data. This means we need to be able to trace back the data to its source to ensure the authenticity.  
+Unity Catalog provides lineage of the data both upstream and downstream in a pipeline so that you can visually see the flow of the data and how it's transformed during the journey. It not only helps identify the authenticity of the data, but also gives us the ability to trace back the root cause of any potential issues with the data.  
+Finally, if you worked in a Data Lake, you will appreciate the difficulty of being able to identify the right data asset for your project amongst the several thousand data assets in a Data Lake. Databricks makes a searchable data catalog available with the help of Unity Catalog.  
+Unity Catalog brings all of these together to implement a unified data governance solution for the data Lakehouse platform.  
+![image](https://github.com/user-attachments/assets/a8e99b4f-adc6-4d85-9148-e2ea69e6855c)
+
+![image](https://github.com/user-attachments/assets/bb1a6c5c-b639-4342-8ba9-b72ff8af15a5)
+
+databricks recommends using one metastore per region. The reasons for this recommendation is to reduce the egress cost as well as improve performance. So please create one metastore per region and keep your databricks workspace and the default storage in the same region to get the best performance and reduce cost.
+![image](https://github.com/user-attachments/assets/ef144ead-1742-4af8-b7f9-ec72a9d6f613)
+
+**Unity Catalog Setup**
+![image](https://github.com/user-attachments/assets/d874b104-ad2a-4dc8-859f-362434027478)
+
+Create a new workspace.
+![image](https://github.com/user-attachments/assets/b2811e5c-3dc8-4f6b-ba16-3aa36a7abfcd)
+
+Create a new storage account as Data Lake Storage Gen2
+![image](https://github.com/user-attachments/assets/d935de79-b36c-4d3e-a1e3-a04627dcf262)
+
+Create access Connector for Azure Databricks.
+![image](https://github.com/user-attachments/assets/4ecab287-a3d1-443c-9cbd-d7a8b0caefc5)
+
+![image](https://github.com/user-attachments/assets/58b5b829-0700-4117-84bb-d1663fd00d43)
+
+Now last thing we want to do is to **assign the role Storage Blob Data Contributor** on our Data Lake to the access connector we just created.
+![image](https://github.com/user-attachments/assets/aadb0029-37d0-4bc6-912c-9ccbe4c682e9)
+
+![image](https://github.com/user-attachments/assets/71db71bd-a0bd-4f57-a0c4-e9de8e268e32)
+
+Firstly, all managed tables in Unity Catalog are Delta tables. You cannot create a table with format Parquet, JSON, CSV, etc., as Managed Tables. For that you will have to use External Tables. Second, by default, the data for Managed Tables will be written to the default storage used to configure the metastore. If you remember, it used to be the DBFS root in Hive Metastore, but now it's the storage account we attached to the metastore while creation. You can change this to a different location by specifying a managed location in your create schema or create catalog statements. In Hive Metastore when you drop a managed table, the underlying data is deleted immediately. But in Unity Catalog enabled workspace, the data will be retained for 30 days. This is a great addition which a lot of people were requesting for. It takes away the fear of accidentally losing the data. Managed tables also benefit from automatic maintenance and performance optimizations.
+
+Databricks recommends everyone to use Managed Tables where possible. With this hierarchical object structure, you will have to use the three level namespace to access a Table, View or a Function. For example, to access a table, you will refer to catalog.schema.table name.
+
+![image](https://github.com/user-attachments/assets/85e3cbd3-ec56-4e8c-b644-5c45d7b9a022)
+
+Unity Catalog also introduces two new objects called Storage Credential and External Location to access a cloud storage or a Data Lake other than the default storage configured while creating the Metastore. This is just a quick introduction to them, they'll be covered later in detail. For completeness, there are also three further objects called Share, Recipient and Provider introduced by Unity Catalog to handle Delta sharing.
+![image](https://github.com/user-attachments/assets/c9778061-0199-4db5-a50c-aa1d6aeb1286)
+
+![image](https://github.com/user-attachments/assets/63377060-5531-4d5a-8724-59b9398d8022)
+
+Or we can create multiple catalogs, schemas, and tables/viw within a meastore.
+![image](https://github.com/user-attachments/assets/834430b1-1139-44a0-a867-86272863aeef)
+
+Create a table in your catalog. 
+![image](https://github.com/user-attachments/assets/9f0955bb-c378-412c-9707-b87d5218b1f7)
+
+Data will be stored in .parquet file in the storage container
+![image](https://github.com/user-attachments/assets/1039bf33-73f0-469d-a23c-9ec18cb52b52)
 
 
 
