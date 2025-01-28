@@ -393,7 +393,7 @@ Unity Catalog brings all of these together to implement a unified data governanc
 
 ![image](https://github.com/user-attachments/assets/bb1a6c5c-b639-4342-8ba9-b72ff8af15a5)
 
-databricks recommends using one metastore per region. The reasons for this recommendation is to reduce the egress cost as well as improve performance. So please create one metastore per region and keep your databricks workspace and the default storage in the same region to get the best performance and reduce cost.
+databricks recommends using one metastore per region. The reasons for this recommendation is to reduce the egress cost as well as improve performance. So please create one metastore per region and keep your databricks workspace and the default storage in the same region to get the best performance and reduce cost.  
 ![image](https://github.com/user-attachments/assets/ef144ead-1742-4af8-b7f9-ec72a9d6f613)
 
 **Unity Catalog Setup**
@@ -410,34 +410,38 @@ Create access Connector for Azure Databricks.
 
 ![image](https://github.com/user-attachments/assets/58b5b829-0700-4117-84bb-d1663fd00d43)
 
-Now last thing we want to do is to **assign the role Storage Blob Data Contributor** on our Data Lake to the access connector we just created.
+Now last thing we want to do is to **assign the role Storage Blob Data Contributor** on our Data Lake to the access connector we just created.  
 ![image](https://github.com/user-attachments/assets/aadb0029-37d0-4bc6-912c-9ccbe4c682e9)
 
 ![image](https://github.com/user-attachments/assets/71db71bd-a0bd-4f57-a0c4-e9de8e268e32)
 
-Firstly, all managed tables in Unity Catalog are Delta tables. You cannot create a table with format Parquet, JSON, CSV, etc., as Managed Tables. For that you will have to use External Tables. Second, by default, the data for Managed Tables will be written to the default storage used to configure the metastore. If you remember, it used to be the DBFS root in Hive Metastore, but now it's the storage account we attached to the metastore while creation. You can change this to a different location by specifying a managed location in your create schema or create catalog statements. In Hive Metastore when you drop a managed table, the underlying data is deleted immediately. But in Unity Catalog enabled workspace, the data will be retained for 30 days. This is a great addition which a lot of people were requesting for. It takes away the fear of accidentally losing the data. Managed tables also benefit from automatic maintenance and performance optimizations.
+Firstly, all managed tables in Unity Catalog are Delta tables. You cannot create a table with format Parquet, JSON, CSV, etc., as Managed Tables. For that you will have to use External Tables. Second, by default, the data for Managed Tables will be written to the default storage used to configure the metastore. If you remember, it used to be the DBFS root in Hive Metastore, but now it's the storage account we attached to the metastore while creation. You can change this to a different location by specifying a managed location in your create schema or create catalog statements. In Hive Metastore when you drop a managed table, the underlying data is deleted immediately. But in Unity Catalog enabled workspace, the data will be retained for 30 days. This is a great addition which a lot of people were requesting for. It takes away the fear of accidentally losing the data. Managed tables also benefit from automatic maintenance and performance optimizations.  
 
-Databricks recommends everyone to use Managed Tables where possible. With this hierarchical object structure, you will have to use the three level namespace to access a Table, View or a Function. For example, to access a table, you will refer to catalog.schema.table name.
+Databricks recommends everyone to use Managed Tables where possible. With this hierarchical object structure, you will have to use the three level namespace to access a Table, View or a Function. For example, to access a table, you will refer to catalog.schema.table name.  
 
 ![image](https://github.com/user-attachments/assets/85e3cbd3-ec56-4e8c-b644-5c45d7b9a022)
 
-Unity Catalog also introduces two new objects called Storage Credential and External Location to access a cloud storage or a Data Lake other than the default storage configured while creating the Metastore. This is just a quick introduction to them, they'll be covered later in detail. For completeness, there are also three further objects called Share, Recipient and Provider introduced by Unity Catalog to handle Delta sharing.
+Unity Catalog also introduces two new objects called Storage Credential and External Location to access a cloud storage or a Data Lake other than the default storage configured while creating the Metastore. This is just a quick introduction to them, they'll be covered later in detail. For completeness, there are also three further objects called Share, Recipient and Provider introduced by Unity Catalog to handle Delta sharing.  
 ![image](https://github.com/user-attachments/assets/c9778061-0199-4db5-a50c-aa1d6aeb1286)
 
 ![image](https://github.com/user-attachments/assets/63377060-5531-4d5a-8724-59b9398d8022)
 
-Or we can create multiple catalogs, schemas, and tables/viw within a meastore.
+Or we can create multiple catalogs, schemas, and tables/viw within a meastore.  
 ![image](https://github.com/user-attachments/assets/834430b1-1139-44a0-a867-86272863aeef)
 
 Create a table in your catalog. 
 ![image](https://github.com/user-attachments/assets/9f0955bb-c378-412c-9707-b87d5218b1f7)
 
-Data will be stored in .parquet file in the storage container
+Data will be stored in .parquet file in the storage container  
 ![image](https://github.com/user-attachments/assets/1039bf33-73f0-469d-a23c-9ec18cb52b52)
 
 Query the catalog data from databricks notebook. 
 ![image](https://github.com/user-attachments/assets/f41a220e-65a4-4c71-9900-343e923ae853)
 ![image](https://github.com/user-attachments/assets/2f1c090b-0943-4433-968e-b4b2d7089665)
+
+# Mount DBFS  
+DBFS is simply a file system that provides distributed access to the data stored in Azure storage. It's not a storage solution in itself. The storage here is the Azure Blob Storage, and this is the default storage that's created when the Databricks workspace was deployed. This DBFS mount on the default Azure Blob Storage is called DBFS Root.  
+![image](https://github.com/user-attachments/assets/67fa993e-614e-4f6e-aaf4-cbe279325550)
 
 # Azure Microsoft Fabric
 With Microsoft Fabric, you don't have to spend all of your time combining various services from different vendors. Instead, you can use a single product that is easy to understand, set up, create, and manage. Fabric offers persona-optimized experiences and tools in an integrated user interface.
@@ -458,29 +462,29 @@ One important feature of OneLake is the ability to create shortcuts, which are e
 ![image](https://github.com/user-attachments/assets/ba7e1900-592d-4dc0-9cef-78f7bf130b2e)
 
 **Explore Fabric's experiences**  
-Fabric offers a set of analytics experiences that are designed to accomplish specific tasks and work together seamlessly. Fabric's experiences include:
+Fabric offers a set of analytics experiences that are designed to accomplish specific tasks and work together seamlessly. Fabric's experiences include:  
 
-Synapse Data Engineering: data engineering with a Spark platform for data transformation at scale.  
-Synapse Data Warehouse: data warehousing with industry-leading SQL performance and scale to support data use.  
-Synapse Data Science: data science with Azure Machine Learning and Spark for model training and execution tracking in a scalable environment.  
-Synapse Real-Time Intelligence: real-time intelligence to query and analyze large volumes of data in real-time.  
-Data Factory: data integration combining Power Query with the scale of Azure Data Factory to move and transform data.  
-Power BI: business intelligence for translating data to decisions through interactive reports.  
+**Synapse Data Engineering:** data engineering with a Spark platform for data transformation at scale.  
+**Synapse Data Warehouse:** data warehousing with industry-leading SQL performance and scale to support data use.  
+**Synapse Data Science:** data science with Azure Machine Learning and Spark for model training and execution tracking in a scalable environment.  
+**Synapse Real-Time Intelligence**: real-time intelligence to query and analyze large volumes of data in real-time.  
+**Data Factory:** data integration combining Power Query with the scale of Azure Data Factory to move and transform data.  
+**Power BI:** business intelligence for translating data to decisions through interactive reports.  
 Fabric provides a comprehensive data analytics solution by unifying all these experiences on a single platform.  
 
 **Explore workspaces**  
-Fabric uses workspaces to contain the different items created across the different experiences. Each organization can customize how to separate and control access to the items. Some possibilities include a dedicated workspace for lakehouse development and a separate workspace for the production lakehouse.
+Fabric uses workspaces to contain the different items created across the different experiences. Each organization can customize how to separate and control access to the items. Some possibilities include a dedicated workspace for lakehouse development and a separate workspace for the production lakehouse.  
 
-In **Microsoft Fabric**, workspaces serve as logical containers that help you organize and manage your data, reports, and other assets. They provide a clear separation of resources, making it easier to control access and maintain security. Each workspace can have its own set of permissions, ensuring that only authorized users can view or modify the contents. This structure supports collaboration within teams while maintaining strict access control, which is crucial for both business and IT users.
+In **Microsoft Fabric**, workspaces serve as logical containers that help you organize and manage your data, reports, and other assets. They provide a clear separation of resources, making it easier to control access and maintain security. Each workspace can have its own set of permissions, ensuring that only authorized users can view or modify the contents. This structure supports collaboration within teams while maintaining strict access control, which is crucial for both business and IT users.  
 
-Workspaces in Microsoft Fabric also offer settings to manage compute resources and integrate with Git for version control. You can configure compute settings to optimize performance and cost, ensuring that your resources are used efficiently. Git integration allows you to track changes, collaborate on code, and maintain a history of your work, which is essential for development and data management. Additionally, workspaces support features like data lineage and impact analysis, providing a comprehensive view of data flow and dependencies, which enhances transparency and decision-making.
+Workspaces in Microsoft Fabric also offer settings to manage compute resources and integrate with Git for version control. You can configure compute settings to optimize performance and cost, ensuring that your resources are used efficiently. Git integration allows you to track changes, collaborate on code, and maintain a history of your work, which is essential for development and data management. Additionally, workspaces support features like data lineage and impact analysis, providing a comprehensive view of data flow and dependencies, which enhances transparency and decision-making.  
 
 **Explore security and governance**  
-Fabric's OneLake is centrally governed and open for collaboration. Data is secured and governed in one place, which allows users to easily find and access the data they need. Fabric administration is centralized in the admin center.
+Fabric's OneLake is centrally governed and open for collaboration. Data is secured and governed in one place, which allows users to easily find and access the data they need. Fabric administration is centralized in the admin center.  
 
-In the admin center you can manage groups and permissions, configure data sources and gateways, and monitor usage and performance. You can also access the Fabric admin APIs and SDKs in the admin center, which you'd use to automate common tasks and integrate Fabric with other systems.
+In the admin center you can manage groups and permissions, configure data sources and gateways, and monitor usage and performance. You can also access the Fabric admin APIs and SDKs in the admin center, which you'd use to automate common tasks and integrate Fabric with other systems.  
 
-**Evolution of collaborative workflows**
+**Evolution of collaborative workflows**  
 Microsoft Fabric transforms the analytics development process by unifying tools into a SaaS platform, allowing flexibility for different roles to perform necessary skills without duplicating efforts.  
 
 **Data engineers** can now ingest, transform, and load large amounts of data into OneLake and present it in whichever data store makes most sense. Data loading patterns are simplified using pipelines and architectures, such as medallion, can be easily configured using workspaces.  
@@ -490,7 +494,7 @@ Microsoft Fabric transforms the analytics development process by unifying tools 
 **Low-to-no-code** users and citizen developers can now discover curated data through the OneLake hub, and further process and analyze it to suit their needs without being dependent on data engineers or duplicating data.  
 **Enable Microsoft Fabric**  
 If you have admin privileges, you can access the Admin center from the Settings menu in the upper right corner of the Power BI service. From here, you enable Fabric in the Tenant settings.
-**Admins** can make Fabric available to either the entire organization or specific groups of users, who can be organized based on their Microsoft 365 or Microsoft Entra security groups. Admins can also delegate the ability to enable Fabric to other users, at the capacity level.
+**Admins** can make Fabric available to either the entire organization or specific groups of users, who can be organized based on their Microsoft 365 or Microsoft Entra security groups. Admins can also delegate the ability to enable Fabric to other users, at the capacity level.  
 
 **Create workspaces**  
 Workspaces are collaborative environments where you create and manage items like lakehouses, warehouses, and reports. All data is stored in OneLake, and is accessed through workspaces. Items are displayed in a list or lineage view, which is a visual representation of the dependency between items.  
