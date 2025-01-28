@@ -237,7 +237,7 @@ Apart from these, there are two more forms of authentication patterns available 
 First one is called the AAD Pass through authentication or otherwise referred to as the Azure Active Directory pass through authentication. In this pattern, we just need to enable the cluster to use Azure Active Directory. Pass through authentication. Whenever a user runs a notebook, the cluster will use the user's Azure Active Directory credentials and look for the roles the user has been assigned to the Azure Data Lake Storage using IAM or Identity and Access Management. If the user has access to the storage account, it will allow the user to access the storage account. Otherwise, the user won't be able to access the storage. AAD pass through authentication is only available on premium workspaces.  
 The last one is the most recent addition to Databricks, called Unity Catalog. In this access pattern, the administrators can define the access permissions for a user using the Databricks Unity Catalog. When a user is trying to access the storage account, the cluster will check for the user's access in the unity catalog. If the user has the required permissions, it will allow the user to access the storage account, otherwise they won't be able to access.  
 
-**First Lets create a Azure Storage Account.**
+**First Lets create a Azure Storage Account.**  
 
 ![image](https://github.com/user-attachments/assets/e0ba0b80-b93e-48f3-8b73-0779d954a484)
 
@@ -250,6 +250,89 @@ The last one is the most recent addition to Databricks, called Unity Catalog. In
 ![image](https://github.com/user-attachments/assets/394d0555-c0c4-4589-94a5-2cf113f06841)
 
 ![image](https://github.com/user-attachments/assets/af199b7e-ba89-4e96-b9f9-cbf6bda6dfd1)
+
+**Lets Create Containers now**  
+Containers are just to hold your files, grouped together into one place.  
+
+![image](https://github.com/user-attachments/assets/a770df96-3544-4659-ab48-443a40eed19c)
+
+![image](https://github.com/user-attachments/assets/8ea53525-c832-48a0-8f17-fee5308868c4)
+
+Upload a file in the container you just created.  
+
+![image](https://github.com/user-attachments/assets/40e7867c-6326-4fb0-9aa2-e558c0b12ae9)
+
+So click on the file name and you can click on Edit, for example, to edit the data and you can click on Preview to preview the data. So I uploaded a csv file, so I've got these columns and it's nicely formatted the data And also you've got the option to come and delete the file from here for example, and you can Rename the file, you can do everything that's stated here. And also, if you wanted to create a new folder within our demo container, you can simply click on Add Directory and then create the folders. You can have any number of nested folders within the container as well. it's very similar to working with any other file system storage, such as in Windows or in Linux, But there are some limitations with this web user interface.
+
+# Azure Storage Explorer
+this web UI doesn't allow us to upload folders. We can only upload individual files, and also you can't see all your storage accounts in your subscription in one place. You need to navigate to each of the storage accounts to see the files and folders in it. Azure Storage Explorer desktop version makes all of it a lot easier and offers many more features. In order to download the Azure Storage Explorer, go to the Storage browser here on the left hand side menu, and click on Download Azure Storage Explorer, that opens up the downloads page for **Storage Explorer**. You can also search using Google or Bing to find the URL  https://azure.microsoft.com/en-us/products/storage/storage-explorer/#Download-4  
+Select your computer's operating system and that downloads the software for you and you just need to install it in your Laptop or Computer.  
+
+![image](https://github.com/user-attachments/assets/a64d1c9c-48a1-4756-97e5-02f3a62ce2cc)
+
+![image](https://github.com/user-attachments/assets/754a5893-ec5f-48de-a6a9-22319ab81769)
+
+**Installed successfully.**
+
+![image](https://github.com/user-attachments/assets/8d10d045-5ce8-4d76-b0da-60bcf7d642bd)
+
+**All these things you can do with Azure Storage Explorer.**
+
+![image](https://github.com/user-attachments/assets/13149be6-2f77-4d33-acf7-2552fff86a49)
+
+As you can see, it's a handy tool to have in your workstation when you're working on a production environment.
+
+**Access Key Authentication**
+![image](https://github.com/user-attachments/assets/71ab149b-141b-4118-b43b-122d6956946b)
+
+**Access keys - Spark Configuration**
+![image](https://github.com/user-attachments/assets/b6a1804e-5d1a-4a04-9af4-26c2d2bc1b43)
+
+The configuration parameter has two parts. The first part is the config fs.azure.account.key, followed by the endpoint of the storage account. In this case, that's Storagename.dfs.co.windows.net. We then provide the 512 bit access key for the storage account as the second parameter. Using this Spark configuration, Databricks will now be able to authenticate to the storage account.
+
+**Access keys - Azure Blob File System Driver**
+![image](https://github.com/user-attachments/assets/92834c7e-1a6a-4d7c-b24e-1d60a7d7dfe7)
+
+Now without access keys i was trying to connect to my **Azure storage Account from Databricks** and it failed as I don't have access keys. 
+
+![image](https://github.com/user-attachments/assets/29e73624-a9e6-4ed1-bf15-cd6458c27a1c)
+
+Go back to the storage Account, click Access keys and copy the access key. 
+
+![image](https://github.com/user-attachments/assets/fb8c1b77-b051-429d-8043-d47e22743861)
+
+Now connect the storage account container from datarbicks using Spark. 
+**Note:** Make sure you disable blob soft delete option, I figured out that it was not connecting with the access key when it was enabled.
+
+![image](https://github.com/user-attachments/assets/400e41d5-9a20-4a5d-8aec-af96fe10d3d1)
+
+So in above step we configured access keys with spark config command, list files using python, and read data from flatfile using spark.
+
+**Shared Access Signature**
+![image](https://github.com/user-attachments/assets/0de22bb7-aa06-4457-b107-630edf052a35)
+
+![image](https://github.com/user-attachments/assets/0353d772-b0b5-469a-9625-cd0cfec461e4)
+
+**Shared Access Signature (SAS) Token**
+A shared access signature (SAS) is a URI that grants restricted access to an Azure Storage container. Use it when you want to grant access to storage account resources for a specific time range without sharing your storage account key.
+
+Url: https://learn.microsoft.com/en-us/azure/databricks/connect/storage/azure-storage#access-azure-data-lake-storage-gen2-or-blob-storage-using-a-sas-token
+spark.conf.set("fs.azure.account.auth.type.<storage-account>.dfs.core.windows.net", "SAS")
+spark.conf.set("fs.azure.sas.token.provider.type.<storage-account>.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.sas.FixedSASTokenProvider")
+spark.conf.set("fs.azure.sas.fixed.token.<storage-account>.dfs.core.windows.net", dbutils.secrets.get(scope="<scope>", key="<sas-token-key>"))
+
+**Generate SAS Token for specific container.**
+
+![image](https://github.com/user-attachments/assets/d04badeb-b36e-48d8-8c78-527c84816376)
+
+![image](https://github.com/user-attachments/assets/8b438f1f-1242-4e61-bad6-9c40703e5f61)
+
+![image](https://github.com/user-attachments/assets/40550370-f775-45ce-a2b0-f08dee916b26)
+
+![image](https://github.com/user-attachments/assets/895ef366-75db-44a4-9a42-9bf89bdb8a32)
+
+
+
 
 
 
