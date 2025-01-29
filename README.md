@@ -460,3 +460,93 @@ Databricks offers jobs that you can schedule to run a specific time are a regula
 ![image](https://github.com/user-attachments/assets/ab36c7fc-608b-48c6-a1dc-c352c8f373bc)
 
 ![image](https://github.com/user-attachments/assets/2f56f890-6bbb-476d-b235-100365c19378)
+
+# Spark SQL
+
+https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/index.html
+
+![image](https://github.com/user-attachments/assets/7ec154e2-2368-4b24-abd0-85392f4bc8f8)
+
+![image](https://github.com/user-attachments/assets/0fc9ed9e-7905-4e59-aefe-148b1e8ca99a)
+
+CREATE TABLE demo.race_results_ext_sql  
+(race_year INT,  
+race_name STRING,  
+race_date TIMESTAMP,  
+circuit_location STRING,  
+driver_name STRING,  
+driver_number INT,  
+driver_nationality STRING,  
+team STRING,  
+grid INT,  
+fastest_lap INT,  
+race_time STRING,  
+points FLOAT,  
+position INT,  
+created_date TIMESTAMP  
+)  
+USING parquet  
+LOCATION "/mnt/formulaidl/presentation/race_results_ext_sql”  
+
+SHOW TABLE IN DEMO;  
+
+INSERT INTO demo.race_results_ext_sql  
+SELECT * FROM  demo.race_results_ext_SOURCE WHERE YEAR = 1930;  
+
+So when you create an external table, it's just a table that's being created, which is the metadata has been created in the Hive Meta Store, or you could call it that you've registered an external table. But when you insert data into that table, that's when the data gets written into your object storage, in our case, which is ADL's. If you're in AWS, that will be S3 for example.
+
+Once you drop this table the table will be dropped but the data stays in /mnt/formulaidl/presentation/race_results_ext_sql location as a parquet file, since this is an external table where the data resides in the given mount point/path. So that's the difference between external table. In the case of external table, you are controlling the data. So if you wanted to remove this data, you will have to run commands to remove data from the file system separately. Dropping the table itself won't have an effect. The beauty of this is I could simply come here and then run this statement now, which is create a table on this location. I don't even have to insert the data because the data is already there. So if I just run the Select Count * one more time, it'll give me all the data.
+
+The difference between **external and managed tables** is that, in the case of **managed table Spark manages** or Spark, maintains both metadata as well as data. But in the case of **external tables**, Spark only maintains the metadata and we externally maintain the data itself.
+
+**TEMP/GLOBAL/PERMANENT VIEWS**
+
+If you want to create a view and use it within the notebook and you think it's not going to be useful anywhere else, then you create a **temporary view**. So that is only available within the Spark session, which is the current notebook. 
+If you want to create a set of views and then use it in the other notebooks within the same application, and then once you've done that batch process or a job, you don't need those views anymore because we produce the outputs and written to, for example, tables. Then you go for a **global temporary view**. 
+If you want to have views which you want to be able to come back and access, then you want to create **permanent views**. A typical scenario where you might want to have a permanent view is you have a table with a lot of data which is being populated by pipelines and then you have some dashboards accessing these tables. But the data needs to be summarized for the dashboards. You can create some views and the results of the views could be used in the dashboards, so they could be permanent views.
+
+# DELTA LAKE
+
+Delta Lake is a project originally developed by Databricks and then open sourced under the Linux Foundation license around late 2019. It's basically an open source storage layer that brings reliability to Data Lakes. It provides acid transactions, scalable metadata handling, and it unifies streaming as well as batch workloads. Delta Lakes run on top of Data Lakes, and they are fully compatible with Apache Spark APIs.  
+
+A Data Warehouse mainly consisted of operational data available within the organization. Some large data warehouses also gathered external data to make intelligent decisions. The data received in a data warehouse is mainly structured as SQL tables or CSV files or semi structured such as JSON or XML files. They didn't have the ability to process unstructured data. The data received then goes through the ETL or the Extract Transform Load process and then load it into a Data Warehouse or Data Marts.  
+
+The data loaded into the data marts where cleaned, validated and augmented with business meaning. Also, they are generally highly aggregated to provide meaningful business value such as Key Processing Indicators or KPIs. This data is then consumed by analysts and the business managers via BI reports. They were very valuable for making business decisions and most large companies had at least one Data Warehouse by the early 2000s.  
+
+At the same time, they had some significant issues. In early 2000s, due to the popularity of the Internet, the volume of data started to increase significantly and also the variety of their data had started to change as well. We started to see unstructured data such as videos, images, text files, etc. and there were very valuable for making decisions. But the Data Warehouses lacked support for the unstructured data we were seeing. In a Data Warehouse, the data was only loaded after the quality of the data has been checked and also once it has been transformed. This meant it took longer to develop a solution to get new data into the Data Warehouse. Data Warehouses were built on traditional relational databases or MPP solutions, which meant they used proprietary sort of file formats and resulted in vendor lock ins. Also, the traditional on prem data warehouses were very difficult to scale or at times impossible. This meant large data migration projects were required in order to scale up those databases. Storage was expensive with large vendors and also it wasn't possible to scale up storage without compute, etc..Finally, Data Warehouses didn't provide sufficient support for Data Science or ML and AI workloads.  
+
+So here comes the Data Lake. The Data Lake Architecture was aimed at solving the issues we discussed about the data warehouses. They came into existence around the year 2011. Data Lakes can not only handle structured and semi structured data, but they can also handle unstructured data, which is roughly about 90% of the data we are currently seeing. The data received is ingested into a Data Lake without any kind of cleansing or transformation. This resulted in quicker timescales to develop solutions as well as fast ingestion times. HDFS as well as cloud object stores such as Amazon S3, Azure Data Lake were really cheap, so organizations could ingest all of the data without worrying too much about the cost, which is great.  
+
+The Data Lakes were built on open source file formats such as Parquet, ORC or AVRO, which meant that we could use a wide variety of software and libraries to process and analyze the data. Data science and the Machine Learning workloads could use the raw data as well as the transformed data in the Data Lake. But there was one major problem. Data Lakes were too slow to service interactive BI reports, and there was lack of governance for the data. So the industry moved towards copying the subset of the data from the Data Lake to the Data Warehouses, again to support these BI reports. This resulted in a clunky architecture with too many moving parts.  
+
+Now let's see the pitfalls of a Data Lake. Data Lakes offered no support for ACID transactions that cost a number of problems, failed jobs left partially loaded files in the Data Lakes, and they had to be cleaned up with separate processes during each rerun. There was no guarantee of consistent reads. The users could be reading partially written data resulting in unreliable Data Lake. Handling a correction to the data being sent was a nightmare because Data Lakes offered no support for updates, so developers had to partition the data and rewrite the entire partition, in these circumstances, which resulted in increased development time. There was no support by the Data Lake to roll back any data being written, we either had to rewrite a partition or rewrite an entire table. As part of the GDPR or the General Data Protection Regulation from European Union that users had the right to be foregone. In order to implement this, companies had to delete that individual's data from the Data Lake. Because the Data Lake offered no support for deletions, at times, entire files had to be rewritten after filtering the individual's data out.   
+Date Lakes offer no history or versioning of the data, making it difficult to do rollbacks as well as the governance. Combination of all these factors resulted in unreliable data swamps. On top of this Data Lakes offered poor performance for interactive query and also poor BI support in terms of performance as well as security, governance, etc. As we've seen so far, they were complex to setup. Finally, we needed to process streaming data separately to the batch data resulting in complex Lambda architectures.  
+
+Data Lakes on the other hand, were mainly focused on Data Science and Machine Learning workloads, but they fell short of satisfying the traditional BI workloads and they supported streaming workloads, but it was difficult to combine streaming and batch workloads. On top of this due to the lack of support for ACID transactions, we ended up having unreliable data swamps in our Data Lakes.  
+
+# DELTA LAKE ARCITECTURE
+
+![image](https://github.com/user-attachments/assets/c3aad1b6-db29-451b-9bb5-44b97123af54)
+
+Delta Lakes handle all types of data and they still run on Cloud Object store, such as S3 and ADLs. So we have cost benefits there and they use open source file formats. And **Delta Lake uses Parquet**. They support all types of workloads, such as BI, Data Science and Machine Learning. They provide the ability to use BI tools directly on them. Most importantly, they provide ACID support, history and versioning. This helps us stop the unreliable data swamps being created, as in the case of Data Lakes. They provide better performance when compared to Data Lakes. And finally, they provide a very simple architecture.  
+We do not need the Lambda architecture for streaming and batch workloads, and also we could potentially remove the need to copy the data from our Data Lake to the Data Warehouse. Delta Lake also stores the data as Parquet files, which is open source format. Key difference here is that when storing the data in Parquet.   
+Delta Lake also creates a **Transaction Log** alongside that file. This is what provides history, versioning, Acid transaction support, time travel, etc. This is a key difference between a Data Lake and a Delta Lake. 
+The next layer is the **Delta Engine**, which is a Spark compatible query engine optimized for performance on Delta Lakes. It also uses Spark for munching through the transaction logs so that it could be distributed as well. We then have the Delta tables, which we can register with hive meta store to provide security via roles and access, governance, data integrity via constraints, as well as better optimizations.  
+On the Delta Lake tables, we can run **Spark workloads** such as any kind of **SQL** transformations, Machine Learning workloads and streaming workloads as we do on a Data Lake. Most importantly, BI workloads can now directly access the Delta Lake. It may look like there is a lot going on here for you, but as a developer it is very simple to change from using a Parquet on a Data Lake to Delta Lake. You simply have to change the format from Parquet to Delta on your **spark.read** or when you write the data in your writer, DataFrame writer APIs. Spark and Delta Engines take care of the rest for you.  
+
+https://docs.delta.io/latest/index.html
+
+# History, Time Travel, Vacuum
+
+**History of a table** So as you can see, we've got the version of the table being updated or inserted or created and also the changes being made here, we'll go through that in a minute. And you've got the time at which that happened as well. You get things like which notebook did the updates and which cluster Id the notebook ran on and all of that good stuff with auditing and versioning.  
+
+which comes with auditing and versioning of the data.  
+![image](https://github.com/user-attachments/assets/bfefb341-7da9-4fbf-9db5-d451584c40a1)
+![image](https://github.com/user-attachments/assets/6ad4da43-e975-479e-92ad-62fe2d8a7b1f)
+
+We can Query the version data as well to see in initial version how many records inserted and so on. There is another thing you can do if you wanted to look at the data based on a timestamp, for example. Let's say I want to look at the data at 15:40:33, what you would do is you would say instead of version as of you would say timestamp, and all you have to do is replace the version number with the timestamp. So I'm going to just pick this timestamp here. And that should give us the data from version one. So this is really handy. So if you are updating or loading into your Delta Lake on a daily basis and you want to know what happened a couple of days ago because you've got a problem with the data now, you could just go and say, give me the data that was as of this timestamp and it will give you that data and this is called **Time Travel** the data based on the timestamp.  
+![image](https://github.com/user-attachments/assets/8bda1e66-aa91-444d-b071-632c1017aea3)
+
+But if I have a legal requirement to delete the data for someone, I should be physically delete the data altogether and we shouldn't be able to see that data. So that's what you have to do if you are implementing a GDPR requirement. As part of the European Union's legislation of a GDPR, if a user asked for his information to be removed from the system, we have to do that in 30 days. And after that, nobody should be able to see that information. But in this case, we have got the history. Somebody could go and query the data and look at that information. By leaving the data there, we're not complying with a legal requirement, but we have a solution for that. So there is something called **vacuum**, which you can apply to remove that data altogether. Usually vacuum removes the history, which is older than 7 days, but you can change that as well. if we need to remove the data immediately, what you would do is you set the retention to zero hours so you can do that by retain zero hours, and that should remove the data, which is older than zero hours. So that is any history on the table is going to be deleted. If I run right now **VACUUM database.tablename RETAIN 0 HOURS**, we're going to get an error. It does to say, are you going for a retention which is less than 7 days? which is 168 hours here. So are you sure you want to do that in order to say I'm sure I want to do that, you need to **SET spark.databricks.delta.retention to false** and then it will let you do that.  
+
+# Transaction Logs
