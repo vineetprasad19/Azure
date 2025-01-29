@@ -59,3 +59,65 @@ Azure Synapse Analytics can be integrated with other Azure data services for end
 # When to use Azure Synapse Analytics
 ![image](https://github.com/user-attachments/assets/42f6d350-191a-4242-b860-0ceb59f02a23)
 
+# Understand data streams
+A data stream consists of a perpetual series of data, typically related to specific point-in-time events. For example, a stream of data might contain details of messages submitted to a social media micro-blogging site, or a series of environmental measurements recorded by an internet-connected weather sensor. Streaming data analytics is most often used to better understand change over time. For example, a marketing organization may perform sentiment analysis on social media messages to see if an advertising campaign results in more positive comments about the company or its products, or an agricultural business might monitor trends in temperature and rainfall to optimize irrigation and crop harvesting.  
+
+Common goals for stream analytics include  
+
+Continuously analyzing data to report issues or trends.  
+Understanding component or system behavior under various conditions to help plan future enhancements.  
+Triggering specific actions or alerts when certain events occur or thresholds are exceeded.  
+![image](https://github.com/user-attachments/assets/d2c9db53-c8c3-4f2e-aa3f-b05da4326620)
+
+# Understand event processing 
+![image](https://github.com/user-attachments/assets/dc135841-d729-4984-91bd-db5495761d76)
+
+# Azure Stream Analytics jobs and clusters
+The easiest way to use Azure Stream Analytics is to create a Stream Analytics job in an Azure subscription, configure its input(s) and output(s), and define the query that the job will use to process the data. The query is expressed using structured query language (SQL) syntax, and can incorporate static reference data from multiple data sources to supply lookup values that can be combined with the streaming data ingested from an input.  
+  
+If your stream process requirements are complex or resource-intensive, you can create a Stream Analysis cluster, which uses the same underlying processing engine as a Stream Analytics job, but in a dedicated tenant (so your processing is not affected by other customers) and with configurable scalability that enables you to define the right balance of throughput and cost for your specific scenario.  
+
+**Inputs**  
+Azure Stream Analytics can ingest data from the following kinds of input:  
+Azure Event Hubs  
+Azure IoT Hub  
+Azure Blob storage  
+Azure Data Lake Storage Gen2  
+
+Inputs are generally used to reference a source of streaming data, which is processed as new event records are added. Additionally, you can define reference inputs that are used to ingest static data to augment the real-time event stream data. For example, you could ingest a stream of real-time weather observation data that includes a unique ID for each weather station, and augment that data with a static reference input that matches the weather station ID to a more meaningful name.  
+
+**Outputs**
+Outputs are destinations to which the results of stream processing are sent. Azure Stream Analytics supports a wide range of outputs, which can be used to:  
+Persist the results of stream processing for further analysis; for example by loading them into a data lake or data warehouse.  
+Display a real-time visualization of the data stream; for example by appending data to a dataset in Microsoft Power BI.  
+
+Generate filtered or summarized events for downstream processing; for example by writing the results of stream processing to an event hub.  
+
+# Queries
+![image](https://github.com/user-attachments/assets/b80622b8-9291-4567-868a-b3851d2e86f0)
+
+# Understand window functions
+A common goal of stream processing is to aggregate events into temporal intervals, or windows. For example, to count the number of social media posts per minute or to calculate the average rainfall per hour.  
+  
+Azure Stream Analytics includes native support for five kinds of temporal windowing functions. These functions enable you to define temporal intervals into which data is aggregated in a query. The supported windowing functions are Tumbling, Hopping, Sliding, Session, and Snapshot.  
+
+# Tumbling
+![image](https://github.com/user-attachments/assets/21f83f48-4f1c-407e-b02b-5e9b2264c0de)
+
+# Hopping
+![image](https://github.com/user-attachments/assets/2b121f11-7979-4234-9007-f83b571a20fa)
+
+# Sliding
+![image](https://github.com/user-attachments/assets/879c6d9a-949c-4235-a47c-a193933ad823)
+
+# Session
+![image](https://github.com/user-attachments/assets/b0bc7ccd-195c-4029-ba5b-6f9e835d308e)
+
+# Snapshot
+![image](https://github.com/user-attachments/assets/aa8d9949-987f-4570-bdf2-0fcc3721f264)
+
+
+
+
+
+
