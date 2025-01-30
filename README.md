@@ -1,6 +1,50 @@
 # Azure-Databricks
 Azure Databricks is an Apache Spark-based analytics platform optimized for the Microsoft Azure cloud. It is a collaborative, cloud-based environment designed for data engineering, machine learning, and analytics workloads. Azure Databricks integrates seamlessly with Azure services like Azure Data Lake Storage, Azure SQL Database, Azure Machine Learning, and Power BI, making it a powerful tool for modern data processing and analytics.  
 
+# Get to know Spark
+To gain a better understanding of how to process and analyze data with Apache Spark in Azure Databricks, it's important to understand the underlying architecture.  
+
+**High-level overview**  
+From a high level, the Azure Databricks service launches and manages Apache Spark clusters within your Azure subscription. Apache Spark clusters are groups of computers that are treated as a single computer and handle the execution of commands issued from notebooks. Clusters enable processing of data to be parallelized across many computers to improve scale and performance. They consist of a Spark driver and worker nodes. The driver node sends work to the worker nodes and instructs them to pull data from a specified data source.  
+  
+In Databricks, the notebook interface is typically the driver program. This driver program contains the main loop for the program and creates distributed datasets on the cluster, then applies operations to those datasets. Driver programs access Apache Spark through a SparkSession object regardless of deployment location.  
+![image](https://github.com/user-attachments/assets/672e0c0f-902b-4a05-88b1-f9d45831821f)
+Microsoft Azure manages the cluster, and auto-scales it as needed based on your usage and the setting used when configuring the cluster. Auto-termination can also be enabled, which allows Azure to terminate the cluster after a specified number of minutes of inactivity.  
+
+**Spark jobs in detail**  
+Work submitted to the cluster is split into as many independent jobs as needed. This is how work is distributed across the Cluster's nodes. Jobs are further subdivided into tasks. The input to a job is partitioned into one or more partitions. These partitions are the unit of work for each slot. In between tasks, partitions may need to be reorganized and shared over the network.  
+  
+The secret to Spark's high performance is parallelism. Scaling vertically (by adding resources to a single computer) is limited to a finite amount of RAM, Threads and CPU speeds; but clusters scale horizontally, adding new nodes to the cluster as needed.  
+  
+Spark parallelizes jobs at two levels:  
+  
+The first level of parallelization is the executor - a Java virtual machine (JVM) running on a worker node, typically, one instance per node.  
+The second level of parallelization is the slot - the number of which is determined by the number of cores and CPUs of each node.  
+Each executor has multiple slots to which parallelized tasks can be assigned.  
+![image](https://github.com/user-attachments/assets/f214dc06-04c6-42da-9607-f1f7cf801d6e)
+The JVM is naturally multi-threaded, but a single JVM, such as the one coordinating the work on the driver, has a finite upper limit. By splitting the work into tasks, the driver can assign units of work to *slots in the executors on worker nodes for parallel execution. Additionally, the driver determines how to partition the data so that it can be distributed for parallel processing. So, the driver assigns a partition of data to each task so that each task knows which piece of data it is to process. Once started, each task will fetch the partition of data assigned to it.  
+
+**Jobs and stages**  
+Depending on the work being performed, multiple parallelized jobs may be required. Each job is broken down into stages. A useful analogy is to imagine that the job is to build a house:  
+  
+The first stage would be to lay the foundation.  
+The second stage would be to erect the walls.  
+The third stage would be to add the roof.  
+Attempting to do any of these steps out of order just doesn't make sense, and may in fact be impossible. Similarly, Spark breaks each job into stages to ensure everything is done in the right order.  
+  
+**Modularity**  
+Spark includes libraries for tasks ranging from SQL to streaming and machine learning, making it a tool for data processing tasks. Some of the Spark libraries include:  
+  
+Spark SQL: For working with structured data.  
+SparkML: For machine learning.  
+GraphX: For graph processing.  
+Spark Streaming: For real-time data processing.  
+![image](https://github.com/user-attachments/assets/206e6408-e036-4a9c-98fa-0355ac41bf3c)
+
+**Compatibility**  
+Spark can run on a variety of distributed systems, including Hadoop YARN, Apache Mesos, Kubernetes, or Spark's own cluster manager. It also reads from and writes to diverse data sources like HDFS, Cassandra, HBase, and Amazon S3.  
+
+
 # What is Azure Databricks Used For? 
 **Data Engineering:**  
 Ingesting, cleaning, and transforming large datasets for further analysis.  
@@ -135,6 +179,14 @@ Hope you now have a good understanding about the **configurations** you can spec
 ![image](https://github.com/user-attachments/assets/ed38e93a-607d-475f-9b72-39050d569ef1)
 
 ![image](https://github.com/user-attachments/assets/81a49047-66bc-456f-a6b8-90046ac44b4e)
+
+**How Azure manages cluster resources**  
+When you create an Azure Databricks workspace, a Databricks appliance is deployed as an Azure resource in your subscription. When you create a cluster in the workspace, you specify the types and sizes of the virtual machines (VMs) to use for both the driver and worker nodes, and some other configuration options, but Azure Databricks manages all other aspects of the cluster.  
+  
+The Databricks appliance is deployed into Azure as a managed resource group within your subscription. This resource group contains the driver and worker VMs for your clusters, along with other required resources, including a virtual network, a security group, and a storage account. All metadata for your cluster, such as scheduled jobs, is stored in an Azure Database with geo-replication for fault tolerance.  
+  
+Internally, Azure Kubernetes Service (AKS) is used to run the Azure Databricks control-plane and data-planes via containers running on the latest generation of Azure hardware (Dv3 VMs), with NvMe SSDs capable of blazing 100us latency on high-performance Azure virtual machines with accelerated networking. Azure Databricks utilizes these features of Azure to further improve Spark performance. After the services within your managed resource group are ready, you can manage the Databricks cluster through the Azure Databricks UI and through features such as auto-scaling and auto-termination.  
+![image](https://github.com/user-attachments/assets/ec107dfa-9c6f-4d8c-ba81-ab7ea2423e46)
 
 **5 Cluster Pools**  
 A Cluster Pool is basically a set of idle ready to use virtual machines, that allow us to reduce the Cluster start and Auto Scaling times.  
