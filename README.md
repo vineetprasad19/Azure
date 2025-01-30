@@ -561,6 +561,10 @@ If you want to have views which you want to be able to come back and access, the
 
 Delta Lake is a project originally developed by Databricks and then open sourced under the Linux Foundation license around late 2019. It's basically an open source storage layer that brings reliability to Data Lakes. It provides acid transactions, scalable metadata handling, and it unifies streaming as well as batch workloads. Delta Lakes run on top of Data Lakes, and they are fully compatible with Apache Spark APIs.  
 
+Azure Databricks' Delta Lake provides a solution for managing big data workflows with enhanced reliability and performance. This platform integrates with Azure's cloud ecosystem, using Databricks' optimized Apache Spark environment to enable scalable and efficient data processing. Delta Lake provides data reliability with ACID transactions, scalable metadata handling, and unified data management that can be used for both batch and streaming data sources.  
+
+Databricks ensures data integrity and simplifies management by supporting features like schema enforcement and time travel, which allow you to access previous versions of data and to audit data changes.  
+
 A Data Warehouse mainly consisted of operational data available within the organization. Some large data warehouses also gathered external data to make intelligent decisions. The data received in a data warehouse is mainly structured as SQL tables or CSV files or semi structured such as JSON or XML files. They didn't have the ability to process unstructured data. The data received then goes through the ETL or the Extract Transform Load process and then load it into a Data Warehouse or Data Marts.  
 
 The data loaded into the data marts where cleaned, validated and augmented with business meaning. Also, they are generally highly aggregated to provide meaningful business value such as Key Processing Indicators or KPIs. This data is then consumed by analysts and the business managers via BI reports. They were very valuable for making business decisions and most large companies had at least one Data Warehouse by the early 2000s.  
@@ -576,6 +580,22 @@ Date Lakes offer no history or versioning of the data, making it difficult to do
 
 Data Lakes on the other hand, were mainly focused on Data Science and Machine Learning workloads, but they fell short of satisfying the traditional BI workloads and they supported streaming workloads, but it was difficult to combine streaming and batch workloads. On top of this due to the lack of support for ACID transactions, we ended up having unreliable data swamps in our Data Lakes.  
 
+# KEY BENEFITS OF DELTA LAKE  
+
+**ACID transactions**  
+Delta Lake provides ACID (Atomicity, Consistency, Isolation, Durability) transactions, ensuring data integrity with multiple concurrent reads and writes. This means when you update or modify the data, the integrity, and consistency of the data are maintained, preventing issues like data corruption or incomplete data reads. Delta Lake optimizes working with large volumes of metatdata at scale, despite traditional data lakes struggling with large volumes of metadata. This ensures efficient operations when you use it over large volumes of data.  
+  
+**Data versioning**  
+Delta Lake ensures that the data adheres to a defined schema, preventing errors due to unexpected or missing data types. It allows for schema evolution without downtime, enabling modifications to the schema as new data fields are introduced. Delta Lake supports data versioning, allowing you to access and revert to earlier versions of data for audits or rollbacks. This feature is useful for reproducing experiments, audits, and for fixing data corruption.  
+  
+**Simplification and performance**  
+Delta Lake treats batch and streaming data as the same entity, simplifying the data pipeline architecture. You can use a single table that can serve as both a batch source and a streaming source or sink, enabling complex operations to be performed more easily. In Delta Lake, features like data compaction and indexing improve read and write speeds. Delta Lake optimizes the layout of data at storage level, which enhances query performance.  
+  
+**Integration**
+Being a part of the Databricks platform, Delta Lake is deeply integrated with other Databricks services. This integration provides the users an experience that allows for the development of sophisticated analytics applications on a unified platform.  
+  
+These features make Delta Lake suited for enterprises needing to manage large volumes of data with high reliability and performance within the Azure Databricks ecosystem.  
+
 # DELTA LAKE ARCITECTURE
 
 ![image](https://github.com/user-attachments/assets/c3aad1b6-db29-451b-9bb5-44b97123af54)
@@ -588,20 +608,58 @@ On the Delta Lake tables, we can run **Spark workloads** such as any kind of **S
 
 https://docs.delta.io/latest/index.html
 
+# Manage ACID transactions
+Managing ACID transactions in Azure Databricks using Delta Lake is a powerful way to maintain data integrity and consistency across large datasets.  
+  
+**Enable Delta Lake**  
+Ensure that Delta Lake is enabled in your Databricks workspace. In Azure Databricks, Delta Lake is enabled by default for all clusters.  
+  
+**Create a Delta Table**    
+To start using ACID transactions, you need to store your data in Delta format. You can create a Delta table either by converting an existing Parquet table or by defining a new table directly in Delta format. Here’s an example of creating a new Delta table using Python:  
+##Create a Delta table  
+data = spark.range(0, 5)  
+data.write.format("delta").save("/FileStore/tables/my_delta_table")  
+  
+**ACID Transactions with Delta Lake**  
+Delta Lake automatically handles ACID transactions for you. Every operation that writes data to a Delta table (such as INSERT, UPDATE, DELETE) is automatically wrapped in a transaction. These operations are logged in a **transaction log**, ensuring that either the entire operation succeeds or fails (atomicity), and the data remains consistent across all views (consistency).  
+  
+**Read and write data**  
+When reading or writing data, you can use standard Spark SQL commands or the DataFrame API. For instance, appending data to a Delta table might look like this using Python:  
+##Append data to a Delta table using DataFrame API  
+new_data = spark.range(5, 10)  
+new_data.write.format("delta").mode("append").save("/FileStore/tables/my_delta_table")  
+  
+**Concurrent writes**  
+Delta Lake manages concurrent writes by ensuring that only one operation can commit its changes at a time. If multiple writers are trying to write to the same Delta table, Delta Lake uses optimistic concurrency control to handle conflicts, retrying or failing operations as necessary.  
+  
+**Transaction log**  
+Delta Lake maintains a detailed **transaction log (_delta_log)** in the background. This log records all the transactions that have modified the table. This log is crucial for maintaining the integrity of the table and for supporting features like time travel, which allows you to view and revert to earlier versions of the data.  
+  
+Transaction logs are stored in **_delta_log** folder as **json** files And when we insert data, that data would be written still as parquet files. Time Travel uses this transaction log to find out what json files it needs to read in order to give you the data as of that version or that timestamp. So you might be wondering what happens when we do a delete. If that record is stored in particular Parquet file then it removes and create a new one, So always creates a new parquet file when you do a DML operation on the data. Also transaction log will also create a **checkpoint.parquet** file after every 10th json file, So that means when you want data from version 11, for example, it doesn't have to go back and read all of those days and files. It will read this one parquet file and read that JSON file and say, okay, I've got the information for you. I should say it'll read the parquet file here and this JSON file and this JSON file and then give you that information. So at any point in time it doesn't have to read more than about nine JSON files and a parquet file in order to find out what data it needs to give you.  
+**Note:** transaction logs are kept up to **30 days**, so your transaction logs are not kept forever. They are kept up to 30 days. And after that, actually Delta Lake will **remove those transaction logs** so that it is more efficient. And if you wanted to keep them for longer, you can do that. But it is not recommended because as you can see, every change is going to create a parquet file for you and you're going to have to spend a lot of money on storage. And also it will make the performance quite slow as well. So that's why it's better to keep the transaction logs kept for 30 days, no longer than that. And if you wanted to set it to zero, which you can do as well, very well, but in that circumstance it will work very similar to a spark table, so you wouldn't have the ability to time travel and things like that. But it is totally up to you to do what you want to do depending on your project situation or project requirements.  
+![image](https://github.com/user-attachments/assets/d6511acb-094c-403b-abd3-16c6ae11510d)
+
+
 # History, Time Travel, Vacuum
 
-**History of a table** So as you can see, we've got the version of the table being updated or inserted or created and also the changes being made here, we'll go through that in a minute. And you've got the time at which that happened as well. You get things like which notebook did the updates and which cluster Id the notebook ran on and all of that good stuff with auditing and versioning.  
-
-which comes with auditing and versioning of the data.  
+**History of a table** So as you can see, we've got the version of the table being updated or inserted or created and also the changes being made here, we'll go through that in a minute. And you've got the time at which that happened as well. You get things like which notebook did the updates and which cluster Id the notebook ran on and all of that good stuff with auditing and versioning. which comes with auditing and versioning of the data.  
 ![image](https://github.com/user-attachments/assets/bfefb341-7da9-4fbf-9db5-d451584c40a1)
 ![image](https://github.com/user-attachments/assets/6ad4da43-e975-479e-92ad-62fe2d8a7b1f)
 
 We can Query the version data as well to see in initial version how many records inserted and so on. There is another thing you can do if you wanted to look at the data based on a timestamp, for example. Let's say I want to look at the data at 15:40:33, what you would do is you would say instead of version as of you would say timestamp, and all you have to do is replace the version number with the timestamp. So I'm going to just pick this timestamp here. And that should give us the data from version one. So this is really handy. So if you are updating or loading into your Delta Lake on a daily basis and you want to know what happened a couple of days ago because you've got a problem with the data now, you could just go and say, give me the data that was as of this timestamp and it will give you that data and this is called **Time Travel** the data based on the timestamp.  
 ![image](https://github.com/user-attachments/assets/8bda1e66-aa91-444d-b071-632c1017aea3)
+![image](https://github.com/user-attachments/assets/710e49d0-7b66-4b14-ad3b-0c8c654e4a1d)
+![image](https://github.com/user-attachments/assets/5f6579dc-1a50-4bd9-8921-29855c0d735a)
 
-But if I have a legal requirement to delete the data for someone, I should be physically delete the data altogether and we shouldn't be able to see that data. So that's what you have to do if you are implementing a GDPR requirement. As part of the European Union's legislation of a GDPR, if a user asked for his information to be removed from the system, we have to do that in 30 days. And after that, nobody should be able to see that information. But in this case, we have got the history. Somebody could go and query the data and look at that information. By leaving the data there, we're not complying with a legal requirement, but we have a solution for that. So there is something called **vacuum**, which you can apply to remove that data altogether. Usually vacuum removes the history, which is older than 7 days, but you can change that as well. if we need to remove the data immediately, what you would do is you set the retention to zero hours so you can do that by retain zero hours, and that should remove the data, which is older than zero hours. So that is any history on the table is going to be deleted. If I run right now **VACUUM database.tablename RETAIN 0 HOURS**, we're going to get an error. It does to say, are you going for a retention which is less than 7 days? which is 168 hours here. So are you sure you want to do that in order to say I'm sure I want to do that, you need to **SET spark.databricks.delta.retention to false** and then it will let you do that.  
+But if I have a legal requirement to delete the data for someone, I should be physically delete the data altogether and we shouldn't be able to see that data. So that's what you have to do if you are implementing a GDPR requirement. As part of the European Union's legislation of a GDPR, if a user asked for his information to be removed from the system, we have to do that in 30 days. And after that, nobody should be able to see that information. But in this case, we have got the history. Somebody could go and query the data and look at that information. By leaving the data there, we're not complying with a legal requirement, but we have a solution for that. So there is something called **vacuum**, which you can apply to remove that data altogether. Usually vacuum removes the history, which is older than 7 days, but you can change that as well. if we need to remove the data immediately, what you would do is you set the retention to zero hours so you can do that by retain zero hours, and that should remove the data, which is older than zero hours. So that is any history on the table is going to be deleted. If I run right now **VACUUM database.tablename RETAIN 0 HOURS**, we're going to get an error. It does to say, are you going for a retention which is less than 7 days? which is 168 hours here. So are you sure you want to do that in order to say I'm sure I want to do that, you need to **SET spark.databricks.delta.retention to false** and then it will let you do that. ![image](https://github.com/user-attachments/assets/4847c07a-b2db-4df7-ab46-aecb52853668)
 
-# Transaction Logs  
-Transaction logs are stored in **_delta_log** folder as **json** files And when we insert data, that data would be written still as parquet files. Time Travel uses this transaction log to find out what json files it needs to read in order to give you the data as of that version or that timestamp. So you might be wondering what happens when we do a delete. If that record is stored in particular Parquet file then it removes and create a new one, So always creates a new parquet file when you do a DML operation on the data. Also transaction log will also create a **checkpoint.parquet** file after every 10th json file, So that means when you want data from version 11, for example, it doesn't have to go back and read all of those days and files. It will read this one parquet file and read that JSON file and say, okay, I've got the information for you. I should say it'll read the parquet file here and this JSON file and this JSON file and then give you that information. So at any point in time it doesn't have to read more than about nine JSON files and a parquet file in order to find out what data it needs to give you.  
-**Note:** transaction logs are kept up to **30 days**, so your transaction logs are not kept forever. They are kept up to 30 days. And after that, actually Delta Lake will **remove those transaction logs** so that it is more efficient. And if you wanted to keep them for longer, you can do that. But it is not recommended because as you can see, every change is going to create a parquet file for you and you're going to have to spend a lot of money on storage. And also it will make the performance quite slow as well. So that's why it's better to keep the transaction logs kept for 30 days, no longer than that. And if you wanted to set it to zero, which you can do as well, very well, but in that circumstance it will work very similar to a spark table, so you wouldn't have the ability to time travel and things like that. But it is totally up to you to do what you want to do depending on your project situation or project requirements.  
-![image](https://github.com/user-attachments/assets/d6511acb-094c-403b-abd3-16c6ae11510d)
+# OPTIMIZE
+The OPTIMIZE command in Delta Lake reorganizes data into fewer, larger files, which can significantly improve the efficiency of read queries. This command also helps manage and reduce the number of small files in a Delta table.  
+
+# Implement schema enforcement
+Schema enforcement is one of the key features of Delta Lake, helping you to maintain data integrity and consistency by ensuring that the data written to a Delta table adheres to the expected schema. This feature prevents erroneous data from corrupting the dataset, which can be valuable in production environments where multiple processes or users might be writing to the same dataset. To implement schema enforcement in Delta Lake, follow these steps:  
+![image](https://github.com/user-attachments/assets/420c7fd8-eab5-4b0d-8f1a-2c15598674d1)
+![image](https://github.com/user-attachments/assets/f7984c2d-5826-4bc2-afab-0f238dd46a39)
+
+
+
