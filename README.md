@@ -661,5 +661,7 @@ Schema enforcement is one of the key features of Delta Lake, helping you to main
 ![image](https://github.com/user-attachments/assets/420c7fd8-eab5-4b0d-8f1a-2c15598674d1)
 ![image](https://github.com/user-attachments/assets/f7984c2d-5826-4bc2-afab-0f238dd46a39)
 
+# AZURE DATA LAKE vs DELTA LAKE
+![image](https://github.com/user-attachments/assets/2e414f21-7aa4-4235-8198-4e1594a43ed6)
 
 
