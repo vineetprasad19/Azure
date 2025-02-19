@@ -85,3 +85,6 @@ Azure Data Box - Secure offline data transfer appliance.
 # Business Intelligence  
 Azure Power BI Embedded - Integrate Power BI reports into applications.  
 Azure Analysis Services - Enterprise-grade analytics and BI modeling.  
+
+# For Interviews and learning
+Questions
