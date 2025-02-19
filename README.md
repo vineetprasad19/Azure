@@ -87,4 +87,4 @@ Azure Power BI Embedded - Integrate Power BI reports into applications.
 Azure Analysis Services - Enterprise-grade analytics and BI modeling.  
 
 # For Interviews and learning
-Questions
+[Questions](https://github.com/vineetprasad19/Azure/blob/main/Interview%20Questions%20and%20Rundown.md)
