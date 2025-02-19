@@ -19,7 +19,7 @@ Azure Cosmos DB - Globally distributed NoSQL database.
 Azure Database for MySQL/PostgreSQL - Managed open-source databases.  
 Azure Synapse Analytics - Unified analytics platform for big data and data warehousing.  
 Azure Cache for Redis - Managed in-memory caching service.  
-
+Azure Databricks - cloud-based big data analytics and machine learning platform optimized for Azure. Integrates seamlessly with Azure Data Lake, Azure Synapse Analytics, Power BI, and Azure Machine Learning.  
 # Networking  
 Azure Virtual Network (VNet) - Private network in the cloud.  
 Azure Traffic Manager - DNS-based traffic load balancer.  
